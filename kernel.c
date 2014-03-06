@@ -7,6 +7,7 @@
 
 void *memcpy(void *dest, const void *src, size_t n);
 
+//compare string
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
 int strcmp(const char *a, const char *b)
 {
@@ -24,6 +25,7 @@ int strcmp(const char *a, const char *b)
 	);
 }
 
+//compare if not the same
 int strncmp(const char *a, const char *b, size_t n)
 {
 	size_t i;
@@ -34,6 +36,7 @@ int strncmp(const char *a, const char *b, size_t n)
 
 	return 0;
 }
+
 
 size_t strlen(const char *s) __attribute__ ((naked));
 size_t strlen(const char *s)
@@ -316,7 +319,7 @@ void serialin(USART_TypeDef* uart, unsigned int intr)
 		}
 	}
 }
-
+/*
 void greeting()
 {
 	int fdout = open("/dev/tty0/out", 0);
@@ -326,6 +329,7 @@ void greeting()
 		string++;
 	}
 }
+*/
 
 void rs232_xmit_msg_task()
 {
@@ -352,17 +356,17 @@ void rs232_xmit_msg_task()
 		}
 	}
 }
-
+/*
 void queue_str_task(const char *str, int delay)
 {
 	int fdout = mq_open("/tmp/mqueue/out", 0);
 	int msg_len = strlen(str) + 1;
 
 	while (1) {
-		/* Post the message.  Keep on trying until it is successful. */
+		// Post the message.  Keep on trying until it is successful. 
 		write(fdout, str, msg_len);
 
-		/* Wait. */
+		// Wait. 
 		sleep(delay);
 	}
 }
@@ -376,7 +380,7 @@ void queue_str_task2()
 {
 	queue_str_task("Hello 2\n", 50);
 }
-
+*/
 void serial_readwrite_task()
 {
 	int fdout;
@@ -669,7 +673,6 @@ void show_task_info(int argc, char* argv[])
 }
 
 //this function helps to show int
-
 void itoa(int n, char *dst, int base)
 {
 	char buf[33] = {0};
@@ -691,7 +694,6 @@ void itoa(int n, char *dst, int base)
 }
 
 //help
-
 void show_cmd_info(int argc, char* argv[])
 {
 	const char help_desp[] = "This system has commands as follow\n\r\0";
@@ -1134,6 +1136,7 @@ int main()
 	init_rs232();
 	__enable_irq();
 
+	//initial task stack
 	tasks[task_count].stack = (void*)init_task(stacks[task_count], &first);
 	tasks[task_count].pid = 0;
 	tasks[task_count].priority = PRIORITY_DEFAULT;
