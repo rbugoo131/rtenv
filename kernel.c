@@ -326,22 +326,7 @@ void greeting()
 		string++;
 	}
 }
-/*
-void echo()
-{
-	int fdout;
-	int fdin;
-	char c;
 
-	fdout = open("/dev/tty0/out", 0);
-	fdin = open("/dev/tty0/in", 0);
-
-	while (1) {
-		read(fdin, &c, 1);
-		write(fdout, &c, 1);
-	}
-}
-*/
 void rs232_xmit_msg_task()
 {
 	int fdout;
@@ -786,17 +771,18 @@ void show_redo(int argc, char *argv[])
 		}
 
 		for (i = 0; i < CMD_COUNT; i++) {
+			if (i == CMD_COUNT) {
+				write(fdout, argv[0], strlen(argv[0]) + 1);
+				write(fdout, ": command not found", 20);
+				write(fdout, next_line, 3);
+			}
+			
 			if (!strcmp(argv[0], cmd_data[i].cmd)) {
 				cmd_data[i].func(argc, argv);
 				break;
 			}
 		}
 		
-		if (i == CMD_COUNT) {
-			write(fdout, argv[0], strlen(argv[0]) + 1);
-			write(fdout, ": command not found", 20);
-			write(fdout, next_line, 3);
-		}
 	}
 }
 
