@@ -2,8 +2,20 @@
 #include "RTOSConfig.h"
 
 #include "syscall.h"
-
 #include <stddef.h>
+
+#ifdef DEBUG
+#include "unit_test.h"
+#endif
+
+#include <ctype.h>
+#include "kernel.h"
+
+void *malloc(size_t size)
+{
+	static char m[1024] = {0};
+	return m;
+}
 
 void *memcpy(void *dest, const void *src, size_t n);
 
@@ -63,14 +75,6 @@ void puts(char *s)
 	}
 }
 
-#define MAX_CMDNAME 19
-#define MAX_ARGC 19
-#define MAX_CMDHELP 1023
-#define HISTORY_COUNT 20
-#define CMDBUF_SIZE 100
-#define MAX_ENVCOUNT 30
-#define MAX_ENVNAME 15
-#define MAX_ENVVALUE 127
 #define STACK_SIZE 512 /* Size of task stacks in words */
 #define TASK_LIMIT 8  /* Max number of tasks we can handle */
 #define PIPE_BUF   64 /* Size of largest atomic pipe message */
@@ -78,7 +82,7 @@ void puts(char *s)
 #define PIPE_LIMIT (TASK_LIMIT * 2)
 
 #define PATHSERVER_FD (TASK_LIMIT + 3) 
-	/* File descriptor of pipe to pathserver */
+/* File descriptor of pipe to pathserver */
 
 #define PRIORITY_DEFAULT 20
 #define PRIORITY_LIMIT (PRIORITY_DEFAULT * 2 - 1)
@@ -111,18 +115,6 @@ void show_man_page(int argc, char *argv[]);
 void show_history(int argc, char *argv[]);
 void show_redo(int argc, char *argv[]);
 
-/* Enumeration for command types. */
-enum {
-	CMD_ECHO = 0,
-	CMD_EXPORT,
-	CMD_HELP,
-	CMD_HISTORY,
-	CMD_MAN,
-	CMD_PS,
-	CMD_REDO,
-	CMD_COUNT
-} CMD_TYPE;
-
 /* Structure for command handler. */
 typedef struct {
 	char cmd[MAX_CMDNAME + 1];
@@ -140,11 +132,6 @@ const hcmd_entry cmd_data[CMD_COUNT] = {
 	[CMD_REDO] = {.cmd = "redo", .func = show_redo, .description = "Do latest one command again."}
 };
 
-/* Structure for environment variables. */
-typedef struct {
-	char name[MAX_ENVNAME + 1];
-	char value[MAX_ENVVALUE + 1];
-} evar_entry;
 evar_entry env_var[MAX_ENVCOUNT];
 int env_count = 0;
 
@@ -319,17 +306,6 @@ void serialin(USART_TypeDef* uart, unsigned int intr)
 		}
 	}
 }
-/*
-void greeting()
-{
-	int fdout = open("/dev/tty0/out", 0);
-	char *string = "Hello, World!\n";
-	while (*string) {
-		write(fdout, string, 1);
-		string++;
-	}
-}
-*/
 
 void rs232_xmit_msg_task()
 {
@@ -356,31 +332,7 @@ void rs232_xmit_msg_task()
 		}
 	}
 }
-/*
-void queue_str_task(const char *str, int delay)
-{
-	int fdout = mq_open("/tmp/mqueue/out", 0);
-	int msg_len = strlen(str) + 1;
 
-	while (1) {
-		// Post the message.  Keep on trying until it is successful. 
-		write(fdout, str, msg_len);
-
-		// Wait. 
-		sleep(delay);
-	}
-}
-
-void queue_str_task1()
-{
-	queue_str_task("Hello 1\n", 200);
-}
-
-void queue_str_task2()
-{
-	queue_str_task("Hello 2\n", 50);
-}
-*/
 void serial_readwrite_task()
 {
 	int fdout;
@@ -784,7 +736,6 @@ void show_redo(int argc, char *argv[])
 				break;
 			}
 		}
-		
 	}
 }
 
@@ -1286,6 +1237,10 @@ int main()
 			i++;
 		current_task = task_pop(&ready_list[i])->pid;
 	}
+
+	#ifdef DEBUG
+		unit_test();
+	#endif
 
 	return 0;
 }

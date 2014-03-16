@@ -1,0 +1,15 @@
+source qemudbg_init.in
+set logging on
+b main
+continue
+b show_redo
+set strcpy(cmd[0], "redo")
+printf "Processed command: %s\n", cmd[0]
+set $step_mult_max = 1000
+set $step_mult_count = 0
+    while ($step_mult_count < $step_mult_max)
+        set $step_mult_count = $step_mult_count + 1
+        printf "step #%d\n", $step_mult_count
+        step
+    end
+continue
